@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 import { FaSignInAlt } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { reset, login } from "../features/auth/authSlice";
+import Spinner from "../components/spinner";
 
 function Index() {
   const [formData, setFormData] = useState({
@@ -16,9 +21,36 @@ function Index() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+
+    if (!email && !password) {
+      toast.error("Please fill all creaditionals ");
+    } else {
+      const userData = {
+        email,
+        password,
+      };
+
+      dispatch(login(userData));
+    }
   };
 
   const { email, password } = formData;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { user, message, isError, isSuccess, isLoading } = useSelector(
+    (state) => state.auth
+  );
+
+  useEffect(() => {
+    if (isError) toast.error(message);
+
+    if (isSuccess || user) navigate("/");
+
+    dispatch(reset());
+  }, [user, isError, isSuccess, message, navigate, dispatch]);
+
+  if (isLoading) return <Spinner />;
 
   return (
     <>

@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { FaUser } from "react-icons/fa";
+import { reset, register } from "../features/auth/authSlice";
+import Spinner from "../components/spinner";
 
 function Index() {
   const [formData, setFormData] = useState({
@@ -18,9 +23,37 @@ function Index() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("password do not match");
+    } else {
+      const userData = {
+        name,
+        email,
+        password,
+      };
+
+      dispatch(register(userData));
+    }
   };
 
   const { name, email, password, confirmPassword } = formData;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { user, message, isError, isSuccess, isLoading } = useSelector(
+    (state) => state.auth
+  );
+
+  useEffect(() => {
+    if (isError) toast.error(message);
+
+    if (isSuccess || user) navigate("/");
+
+    dispatch(reset());
+  }, [user, isError, isSuccess, message, navigate, dispatch]);
+
+  if (isLoading) return <Spinner />;
 
   return (
     <>
